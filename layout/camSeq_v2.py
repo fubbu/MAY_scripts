@@ -40,19 +40,22 @@ def LOCK_ST_ET_CAMERA_DB(i_obj,i_lock):
 
 def CREATE_MAIN_SEQ_CAM_DB():
 	global selectedCamera_DB
+	selectedCamera_DB = "None"
 	sT = 'startShotRange'
 	eT = 'endShotRange'
 	MC = "sequenceCameraMain"
 	parMC = "sequenceCameraMain_parentConstraint1"
 
-	if (selectedCamera_DB == -1):
-		startTime = cm.getAttr("{}.{}".format(listShotsCamera_DB[0],sT))
-		endTime = cm.getAttr("{}.{}".format(listShotsCamera_DB[0],eT))
+	if not selectedCamera_DB is None:
+		if (selectedCamera_DB == -1):
+			startTime = cm.getAttr("{}.{}".format(listShotsCamera_DB[0],sT))
+			endTime = cm.getAttr("{}.{}".format(listShotsCamera_DB[0],eT))
 
-		cm.playbackOptions(min=startTime,max=endTime)
+			cm.playbackOptions(min=startTime,max=endTime)
+
 	selectedCamera_DB = 0
 	#-------------------------------------------------------
-	
+
 	if(len(listShotsCamera_DB) == 0):
 		return
 	if cm.objExists(MC):
@@ -95,7 +98,7 @@ def CAMERA_SEQ_PARENT_DB(i_mc,i_parmc):
 	#-------------------------------------------------------
 
 	for i in range(len(listShotsCamera_DB)):
-		cm.parentConstraint(listShotsCamera_DB[i], i_mc)
+		cm.parentConstraint(listShotsCamera_DB[i], i_mc,mo=0)
 		cm.setAttr("{}.{}W{}".format(i_parmc ,listShotsCamera_DB[i],i),0)
 		checkAttr = cm.attributeQuery(sT,n=listShotsCamera_DB[i],ex=1)
 		if(checkAttr == 0):
