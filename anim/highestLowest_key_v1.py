@@ -19,7 +19,7 @@ def HIGHEST_LOWEST_KEY_DB(void):
 	for i in range(len(attrs)):
 		inputChannel = cm.listConnections("{}.{}".format(objSel[0],attrs[i]),d=0,s=1)
 		if(inputChannel is None):
-			print cm.confirmDialog(m="!!! selected channel is empty / select channel with animation!!!")
+			cm.confirmDialog(m="!!! selected channel is empty / select channel with animation!!!")
 			return
 		else:
 			listCurveKey.append(inputChannel[0])
@@ -132,18 +132,35 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 
 	cm.select(locBakeList)
 	cm.bakeResults( 'locBake_anim_DB_*', t=(startBake,endBake), sm=1, sb=1, sr=1 )
-	
+		
 	for i in range(len(listSel)):
 		locBake = "locBake_anim_DB_{}".format(i)
 		#-------------------------------------------------------
 
-		cm.delete("{}_parentConstraint1".format(locBake),"{}_{}".format(listSel[i],attrs[-1]))
+		if cm.objExists("{}_{}".format(listSel[i],attrs[-1])):
+			cm.delete("{}_{}".format(listSel[i],attrs[-1]))
+		cm.delete("{}_parentConstraint1".format(locBake))
 		cm.setAttr("{}.{}".format(listSel[i],attrs[-1]),sSwitchV)
-		parCon = cm.parentConstraint(locBakeList[i],listSel[i],mo=0)
-		cm.bakeResults( listSel[i], t=(startBake,endBake), sm=1, sb=1, sr=1, at=attrs )
 
-		cm.delete(parCon,locBakeList[i],listCurveKey[i])
-			
+		cm.select(locBake)
+		startSearch = cm.findKeyframe(ts=1, w="first" )
+		endSearch = cm.findKeyframe(ts=1, w="last" )
+		numberOfKeys = cmds.keyframe(iv=1,q=1)
+		numberOfKeys = list(set(numberOfKeys))
+		cm.currentTime(startSearch)
+
+		for m in range(len(numberOfKeys)):
+			nextKey = cm.findKeyframe(ts=1, w="next" )
+			parCon = cm.parentConstraint(locBakeList[i],listSel[i])
+			for n in range(len(attrs)):	
+				if [x for x in blockLastChannel if attrs[n] in x]:
+					cm.setKeyframe("{}.{}".format(listSel[i],attrs[n]))
+			cm.delete(parCon)
+			cm.currentTime(nextKey)
+
+		if cm.objExists(locBakeList[i]):
+			cm.delete(locBakeList[i])
+		mel.eval('hyperShadePanelBuildEditMenu hyperShadePanel1 hyperShadePanelMenuEditMenu;hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
 				
 #-------------------------------------WINDOW-------------------------------------
 if cm.window('keyTransform_window',exists=1):
