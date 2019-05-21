@@ -128,10 +128,7 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 		for n in range(len(attrs)):
 			inputChannel = cm.listConnections("{}.{}".format(listSel[i],attrs[n]),d=0,s=1)
 			if not (inputChannel is None):
-				if(n != (len(attrs)-1)):
-					listCurveKey.append(inputChannel[0])
-				else:
-					cm.delete(inputChannel[0])
+				listCurveKey.append(inputChannel[0])
 
 	cm.select(locBakeList)
 	cm.bakeResults( 'locBake_anim_DB_*', t=(startBake,endBake), sm=1, sb=1, sr=1 )
@@ -140,6 +137,10 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 		locBake = "locBake_anim_DB_{}".format(i)
 		#-------------------------------------------------------
 
+		inputChannel = cm.listConnections("{}.{}".format(listSel[i],attrs[-1]),d=0,s=1)
+		if not (inputChannel is None):
+			cm.delete(inputChannel[0])
+				
 		if cm.objExists("{}_{}".format(listSel[i],attrs[-1])):
 			cm.delete("{}_{}".format(listSel[i],attrs[-1]))
 		cm.delete("{}_parentConstraint1".format(locBake))
@@ -160,11 +161,6 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 
 			cm.delete(parCon)
 			cm.currentTime(nextKey)
-
-		listBakeChannels = []
-		if not [x for x in blockLastChannel if attrs[n] in x]:
-			listBakeChannels.append(attrs[n])
-		cm.bakeResults( listSel[i], t=(startBake,endBake), sm=1, sb=1, sr=1, at=listBakeChannels )
 
 		if cm.objExists(locBakeList[i]):
 			cm.delete(locBakeList[i])
