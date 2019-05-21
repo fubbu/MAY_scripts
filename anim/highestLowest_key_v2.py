@@ -128,7 +128,10 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 		for n in range(len(attrs)):
 			inputChannel = cm.listConnections("{}.{}".format(listSel[i],attrs[n]),d=0,s=1)
 			if not (inputChannel is None):
-				listCurveKey.append(inputChannel[0])
+				if(n != (len(attrs)-1)):
+					listCurveKey.append(inputChannel[0])
+				else:
+					cm.delete(inputChannel[0])
 
 	cm.select(locBakeList)
 	cm.bakeResults( 'locBake_anim_DB_*', t=(startBake,endBake), sm=1, sb=1, sr=1 )
@@ -153,15 +156,19 @@ def SPACE_SWITCH_BAKE_ANIM_DB(void):
 			nextKey = cm.findKeyframe(ts=1, w="next" )
 			parCon = cm.parentConstraint(locBakeList[i],listSel[i])
 			for n in range(len(attrs)):	
-				if [x for x in blockLastChannel if attrs[n] in x]:
-					cm.setKeyframe("{}.{}".format(listSel[i],attrs[n]))
+				cm.setKeyframe("{}.{}".format(listSel[i],attrs[n]))
+
 			cm.delete(parCon)
 			cm.currentTime(nextKey)
 
+		listBakeChannels = []
+		if not [x for x in blockLastChannel if attrs[n] in x]:
+			listBakeChannels.append(attrs[n])
+		cm.bakeResults( listSel[i], t=(startBake,endBake), sm=1, sb=1, sr=1, at=listBakeChannels )
+
 		if cm.objExists(locBakeList[i]):
 			cm.delete(locBakeList[i])
-		mel.eval('hyperShadePanelBuildEditMenu hyperShadePanel1 hyperShadePanelMenuEditMenu;hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
-				
+		
 #-------------------------------------WINDOW-------------------------------------
 if cm.window('keyTransform_window',exists=1):
 	cm.deleteUI('keyTransform_window')
