@@ -138,6 +138,7 @@ def CAMERA_SEQ_CHANGE_DB(i_cam):
 		selectedCamera_DB = -1
 		CHECK_CAMERA_SHOT_RANGE()
 		playTime = []
+		allShotsExp = []
 		for i in range(len(listShotsCamera_DB)):
 			pM_allShot = "pm_{}_range".format(listShotsCamera_DB[i])
 			rV_allShot = "rv_{}_range".format(listShotsCamera_DB[i])
@@ -157,13 +158,18 @@ def CAMERA_SEQ_CHANGE_DB(i_cam):
 			playTime.append(cm.getAttr("{}.{}".format(listShotsCamera_DB[i],sT)))
 			playTime.append(cm.getAttr("{}.{}".format(listShotsCamera_DB[i],eT)))
 
-		cm.expression(n='allShot_frame_expression',s='sequenceCameraMain.currentFrame = frame;' )
+			expShot = "if(frame <= {} || frame >= {}){{\nsequenceCameraMainShape.focalLength = {}.focalLength;\n}} else {{\nsequenceCameraMainShape.focalLength = {}.focalLength;\n}}\n".format()
+
+		cm.expression(n='allShot_frame_expression',s='sequenceCameraMain.currentFrame = frame;')
 		playTime.sort()
 		cm.playbackOptions(min=playTime[0],max=playTime[-1])
 
 	else:
 		if not (selectedCamera_DB == -1):
 			CHECK_CAMERA_SHOT_RANGE()
+			camShape = cm.listRelatives(i_cam,s=1)
+			focal = cm.getAttr("{}.focalLength".format(camShape[0]))
+			cm.setAttr("{}Shape.focalLength".format(MC),focal)
 
 			cm.setAttr("{}.{}W{}".format(parMC,listShotsCamera_DB[selectedCamera_DB],selectedCamera_DB),0)
 		else:
@@ -185,6 +191,10 @@ def CAMERA_SEQ_CHANGE_DB(i_cam):
 		endTime = cm.getAttr("{}.{}".format(listShotsCamera_DB[selectedCamera_DB],eT))
 
 		cm.playbackOptions(min=startTime,max=endTime)
+
+		camShape = cm.listRelatives(i_cam,s=1)
+		focal = cm.getAttr("{}.focalLength".format(camShape[0]))
+		cm.setAttr("{}Shape.focalLength".format(MC),focal)
 
 def WRITE_SHOT_RANGE_DB(*args):
 	global selectedCamera_DB
